@@ -1,10 +1,10 @@
 <?php
 // Include bootstrap and check user permissions
 require_once __DIR__ . "/../../bootstrap.php";
-
+$baseUrl="/improved";
 // Check if user is logged in and is a freelancer
 if (!is_logged_in() || get_user_type() !== 'freelancer') {
-    redirect("/pages/auth/login.php?error=login_required&redirect=" . urlencode($_SERVER["REQUEST_URI"]));
+    redirect("improved/pages/auth/login.php?error=login_required&redirect=" . urlencode($_SERVER["REQUEST_URI"]));
     exit;
 }
 
@@ -12,7 +12,7 @@ if (!is_logged_in() || get_user_type() !== 'freelancer') {
 $project_id = isset($_GET["project_id"]) ? filter_input(INPUT_GET, "project_id", FILTER_VALIDATE_INT) : null;
 
 if (!$project_id) {
-    redirect("/pages/projects/list.php?error=invalid_project_id");
+    redirect("improved/pages/projects/list.php?error=invalid_project_id");
     exit;
 }
 
@@ -29,13 +29,13 @@ if (!$db) {
         $project = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$project) {
-            redirect("/pages/projects/list.php?error=project_not_found");
+            redirect("improved/pages/projects/list.php?error=project_not_found");
             exit;
         }
 
         // Check if project is open for proposals
         if ($project["status"] !== 'open') {
-            redirect("/pages/projects/view.php?id=" . $project_id . "&error=project_not_open");
+            redirect("improved/pages/projects/view.php?id=" . $project_id . "&error=project_not_open");
             exit;
         }
 
@@ -46,7 +46,7 @@ if (!$db) {
         $check_stmt->bindParam(":freelancer_id", $freelancer_id, PDO::PARAM_INT);
         $check_stmt->execute();
         if ($check_stmt->fetch()) {
-            redirect("/pages/projects/view.php?id=" . $project_id . "&error=already_submitted");
+            redirect("improved/pages/projects/view.php?id=" . $project_id . "&error=already_submitted");
             exit;
         }
 
@@ -62,7 +62,11 @@ $page_title = "Submit Proposal for: " . ($project ? htmlspecialchars($project["t
 require_once __DIR__ . "/../../includes/header.php";
 
 // Generate CSRF token
-$token = generate_form_token('submit_proposal_token');
+try {
+    $token = generate_form_token('submit_proposal_token');
+} catch (\Random\RandomException $e) {
+
+}
 
 
 ?>
@@ -81,9 +85,9 @@ $token = generate_form_token('submit_proposal_token');
         <?php endif; ?>
 
         <?php if ($project && !isset($error_message)): ?>
-            <p class="mb-4">You are submitting a proposal for the project <a href="/pages/projects/view.php?id=<?php echo $project_id; ?>"><?php echo htmlspecialchars($project["title"]); ?></a>.</p>
+            <p class="mb-4">You are submitting a proposal for the project <a href="<?php echo $baseUrl; ?>/pages/projects/view.php?id=<?php echo $project_id; ?>"><?php echo htmlspecialchars($project["title"]); ?></a>.</p>
 
-            <form action="/pages/proposals/submit_process.php" method="post" class="validate-form">
+            <form action="<?php echo $baseUrl; ?>/pages/proposals/submit_process.php" method="post" class="validate-form">
                 <input type="hidden" name="token" value="<?php echo $token; ?>">
                 <input type="hidden" name="project_id" value="<?php echo $project_id; ?>">
 
@@ -110,7 +114,7 @@ $token = generate_form_token('submit_proposal_token');
                 </div>
             </form>
         <?php else: ?>
-            <p>Could not load project details. Please go back to the <a href="/pages/projects/list.php">project list</a> and try again.</p>
+            <p>Could not load project details. Please go back to the <a href="<?php echo $baseUrl; ?>/pages/projects/list.php">project list</a> and try again.</p>
         <?php endif; ?>
     </div>
 </div>

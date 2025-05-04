@@ -120,3 +120,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Add any other initializations here
 });
+
+    function openRevokeModal() {
+    document.getElementById('revokeModal').style.display = 'block';
+}
+
+    function closeRevokeModal() {
+    document.getElementById('revokeModal').style.display = 'none';
+}
+

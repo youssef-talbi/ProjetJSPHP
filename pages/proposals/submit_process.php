@@ -1,24 +1,25 @@
 <?php
 // Process proposal submission form
-
+$baseUrl="/improved";
 // Include bootstrap and check user permissions
 require_once __DIR__ . "/../../bootstrap.php";
 
 // Check if user is logged in and is a freelancer
 if (!is_logged_in() || get_user_type() !== "freelancer") {
-    redirect("/pages/auth/login.php?error=login_required");
+    redirect("improved/pages/auth/login.php?error=login_required");
     exit;
 }
 
 // Check if form was submitted via POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    redirect("/pages/projects/list.php?error=invalid_request");
+    redirect("improved/pages/projects/list.php?error=invalid_request");
     exit;
 }
 
 // Validate CSRF token
 if (!validate_form_token("submit_proposal_token")) {
-    redirect("/pages/proposals/submit.php?project_id=" . ($_POST["project_id"] ?? ") ". "&error=invalid_token"));
+    $project_id_fallback = $_POST["project_id"] ?? 0;
+    redirect("improved/pages/proposals/submit.php?project_id=" . $project_id_fallback . "&error=invalid_token");
     exit;
 }
 
@@ -31,14 +32,14 @@ $estimated_completion_days = filter_input(INPUT_POST, "estimated_completion_days
 
 // Basic validation
 if (empty($project_id) || empty($cover_letter) || $price === false || $price < 0 || $estimated_completion_days === false || $estimated_completion_days < 1) {
-    redirect("/pages/proposals/submit.php?project_id=" . $project_id . "&error=empty_or_invalid");
+    redirect("improved/pages/proposals/submit.php?project_id=" . $project_id . "&error=empty_or_invalid");
     exit;
 }
 
 // Database connection
 $db = getDbConnection();
 if (!$db) {
-    redirect("/pages/proposals/submit.php?project_id=" . $project_id . "&error=db_error");
+    redirect("improved/pages/proposals/submit.php?project_id=" . $project_id . "&error=db_error");
     exit;
 }
 
@@ -54,13 +55,13 @@ try {
 
     if (!$project) {
         $db->rollBack();
-        redirect("/pages/projects/list.php?error=project_not_found");
+        redirect("improved/pages/projects/list.php?error=project_not_found");
         exit;
     }
 
     if ($project["status"] !== "open") {
         $db->rollBack();
-        redirect("/pages/projects/view.php?id=" . $project_id . "&error=project_not_open");
+        redirect("improved/pages/projects/view.php?id=" . $project_id . "&error=project_not_open");
         exit;
     }
 
@@ -71,7 +72,7 @@ try {
     $check_stmt->execute();
     if ($check_stmt->fetch()) {
         $db->rollBack();
-        redirect("/pages/projects/view.php?id=" . $project_id . "&error=already_submitted");
+        redirect("improved/pages/projects/view.php?id=" . $project_id . "&error=already_submitted");
         exit;
     }
 

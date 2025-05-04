@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/header.php';
-
+$baseUrl="/improved";
 // Check if logged in and is a client
 if (!is_logged_in() || get_user_type() !== 'client') {
     redirect('/pages/auth/login.php', 'Unauthorized access. Please login as a client.', 'danger');
@@ -34,7 +34,7 @@ if ($db) {
             <div class="card-content">
                 <h3>📢 My Projects</h3>
                 <p>View and manage the projects you've posted.</p>
-                <a href="/pages/projects/my_projects.php" class="btn btn-sm">Manage Projects</a>
+                <a href="<?php echo $baseUrl; ?>/pages/projects/my_projects.php" class="btn btn-sm">Manage Projects</a>
             </div>
         </div>
 
@@ -42,7 +42,7 @@ if ($db) {
             <div class="card-content">
                 <h3>📬 Proposals</h3>
                 <p>Review proposals submitted by freelancers.</p>
-                <a href="/pages/proposals/received.php" class="btn btn-sm">View Proposals</a>
+                <a href="<?php echo $baseUrl; ?>/pages/proposals/received.php" class="btn btn-sm">View Proposals</a>
             </div>
         </div>
 
@@ -50,7 +50,7 @@ if ($db) {
             <div class="card-content">
                 <h3>🧑‍💼 Hires</h3>
                 <p>Manage freelancers you’ve hired and ongoing contracts.</p>
-                <a href="/pages/contracts/client_contracts.php" class="btn btn-sm">Manage Contracts</a>
+                <a href="<?php echo $baseUrl; ?>/pages/contracts/client_contracts.php" class="btn btn-sm">Manage Contracts</a>
             </div>
         </div>
     </div>

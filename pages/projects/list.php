@@ -1,7 +1,7 @@
 <?php
 // Include bootstrap
 require_once __DIR__ . "/../../bootstrap.php";
-
+$baseUrl="/improved";
 // Include header
 require_once __DIR__ . "/../../includes/header.php";
 
@@ -292,7 +292,7 @@ $filter_skills = $skill_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     }
                                     ?>
                                 </div>
-                                <a href="/pages/projects/view.php?id=<?php echo $project['project_id']; ?>" class="btn btn-sm">View Details</a>
+                                <a href="<?php echo $baseUrl; ?>/pages/projects/view.php?id=<?php echo $project['project_id']; ?>" class="btn btn-sm">View Details</a>
                             </div>
                         </div>
                     <?php endforeach; ?>

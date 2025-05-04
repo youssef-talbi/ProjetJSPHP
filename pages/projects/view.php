@@ -1,12 +1,12 @@
 <?php
 // Include bootstrap
 require_once __DIR__ ."/../../bootstrap.php";
-
+$baseUrl="/improved";
 // Get project ID from query string
 $project_id = isset($_GET["id"]) ? filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT) : null;
 
 if (!$project_id) {
-    redirect("/pages/projects/list.php?error=invalid_project_id");
+    redirect("improved/pages/projects/list.php?error=invalid_project_id");
     exit;
 }
 
@@ -83,6 +83,13 @@ if ($is_freelancer_viewer) {
 // Include header
 $page_title = "Project: " . htmlspecialchars($project["title"]);
 require_once __DIR__ ."/../../includes/header.php";
+// Check if there's an awarded contract for this project
+$contract_stmt = $db->prepare("SELECT * FROM contracts WHERE project_id = :project_id");
+$contract_stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
+$contract_stmt->execute();
+$current_contract = $contract_stmt->fetch(PDO::FETCH_ASSOC);
+$awarded_freelancer_id = $current_contract ? $current_contract['freelancer_id'] : null;
+
 
 ?>
 
@@ -97,7 +104,7 @@ require_once __DIR__ ."/../../includes/header.php";
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h1 class="mb-1"><?php echo htmlspecialchars($project["title"]); ?></h1>
-                            <p class="text-muted">Posted <?php echo time_ago($project["creation_date"]); ?> in <a href="/pages/projects/list.php?category=<?php echo $project["category_id"]; ?>"><?php echo htmlspecialchars($project["category_name"]); ?></a></p>
+                            <p class="text-muted">Posted <?php echo time_ago($project["creation_date"]); ?> in <a href="<?php echo $baseUrl; ?>/pages/projects/list.php?category=<?php echo $project["category_id"]; ?>"><?php echo htmlspecialchars($project["category_name"]); ?></a></p>
                         </div>
                         <span class="badge <?php echo $project["status"] === 'open' ? 'badge-success' : 'badge-secondary'; ?>" style="font-size: 1rem;"><?php echo ucfirst($project["status"]); ?></span>
                     </div>
@@ -151,7 +158,7 @@ require_once __DIR__ ."/../../includes/header.php";
                                                 <img src="<?php echo htmlspecialchars(get_profile_picture_url($proposal["freelancer_picture"])); ?>" alt="<?php echo htmlspecialchars($proposal["freelancer_first_name"]); ?>" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
                                                 <div>
                                                     <div class="flex justify-between items-center mb-1">
-                                                        <h4 class="mb-0"><a href="/pages/profile/view.php?id=<?php echo $proposal["freelancer_user_id"]; ?>"><?php echo htmlspecialchars($proposal["freelancer_first_name"] . " " . $proposal["freelancer_last_name"]); ?></a></h4>
+                                                        <h4 class="mb-0"><a href="<?php echo $baseUrl; ?>/pages/profile/view.php?id=<?php echo $proposal["freelancer_user_id"]; ?>"><?php echo htmlspecialchars($proposal["freelancer_first_name"] . " " . $proposal["freelancer_last_name"]); ?></a></h4>
                                                         <span class="text-muted"><?php echo time_ago($proposal["submission_date"]); ?></span>
                                                     </div>
                                                     <p class="text-primary mb-1"><?php echo htmlspecialchars($proposal["freelancer_headline"] ?? "Freelancer"); ?></p>
@@ -163,9 +170,39 @@ require_once __DIR__ ."/../../includes/header.php";
                                                     <p><strong>Proposed Bid:</strong> <?php echo format_currency($proposal["price"]); ?> (<?php echo $proposal["estimated_completion_days"]; ?> days)</p> <!-- Corrected field names -->
                                                     <p><?php echo nl2br(htmlspecialchars(truncate_text($proposal["cover_letter"], 200))); ?></p>
                                                     <div class="mt-2">
-                                                        <a href="#" class="btn btn-sm">View Proposal</a> <!-- Link to full proposal view/modal -->
-                                                        <a href="/pages/messaging/conversation.php?recipient_id=<?php echo $proposal["freelancer_user_id"]; ?>" class="btn btn-sm btn-secondary">Message</a>
-                                                        <a href="#" class="btn btn-sm btn-success">Award Project</a> <!-- Link to award action -->
+
+                                                        <a href="<?php echo $baseUrl; ?>/pages/messaging/conversation.php?recipient_id=<?php echo $proposal["freelancer_user_id"]; ?>" class="btn btn-sm btn-secondary">Message</a>
+
+                                                        <?php if ($awarded_freelancer_id == $proposal["freelancer_user_id"]): ?>
+                                                            <!-- Show Revoke Button for awarded freelancer -->
+                                                            <button class="btn btn-danger" onclick="openRevokeModal()">Revoke Award</button>
+
+                                                            <!-- Modal -->
+                                                            <div id="revokeModal" class="modal" style="display:none;">
+                                                                <div class="modal-content">
+                                                                    <h3>Confirm Revocation</h3>
+                                                                    <p>Are you sure you want to revoke the award? This will cancel the contract and reopen the project.</p>
+                                                                    <form method="POST" action="<?php echo $baseUrl; ?>/pages/contracts/revoke_contract.php">
+                                                                        <input type="hidden" name="project_id" value="<?= htmlspecialchars($proposal['project_id']) ?>">
+                                                                        <button type="submit" class="btn btn-danger">Yes, Revoke</button>
+                                                                        <button type="button" onclick="closeRevokeModal()" class="btn btn-secondary">Cancel</button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        <?php elseif (!$awarded_freelancer_id): ?>
+
+                                                            <a href="<?php echo $baseUrl; ?>/pages/contracts/award.php?proposal_id=<?php echo $proposal['proposal_id']; ?>" class="btn btn-sm btn-success">Award Project</a>
+                                                        <?php endif; ?>
+                                                        <script>
+                                                            function openRevokeModal() {
+                                                                document.getElementById('revokeModal').style.display = 'flex';
+                                                            }
+                                                            function closeRevokeModal() {
+                                                                document.getElementById('revokeModal').style.display = 'none';
+                                                            }
+                                                        </script>
+
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -195,14 +232,14 @@ require_once __DIR__ ."/../../includes/header.php";
                                 </div>
                             </div>
                         <?php else: ?>
-                            <a href="/pages/proposals/submit.php?project_id=<?php echo $project_id; ?>" class="btn btn-lg mb-4" style="width: 100%;">Submit a Proposal</a>
+                            <a href="<?php echo $baseUrl; ?>/pages/proposals/submit.php?project_id=<?php echo $project_id; ?>" class="btn btn-lg mb-4" style="width: 100%;">Submit a Proposal</a>
                         <?php endif; ?>
                     <?php elseif (!$is_logged_in): ?>
                         <div class="card mb-4">
                             <div class="card-content text-center">
                                 <p>Interested in this project?</p>
                                 <a href="/pages/auth/login.php?redirect=/pages/projects/view.php?id=<?php echo $project_id; ?>" class="btn btn-sm">Log In to Submit Proposal</a>
-                                <p class="mt-2"><small>New here? <a href="/pages/auth/register.php">Sign Up</a></small></p>
+                                <p class="mt-2"><small>New here? <a href="<?php echo $baseUrl; ?>/pages/auth/register.php">Sign Up</a></small></p>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -232,7 +269,6 @@ require_once __DIR__ ."/../../includes/header.php";
                             <p><strong>Deadline:</strong> <?php echo date("M d, Y", strtotime($project["deadline"])); ?></p>
                         <?php endif; ?>
                         <p><strong>Proposals:</strong> <?php echo count($proposals); ?></p>
-                        <p><strong>Project ID:</strong> <?php echo $project["project_id"]; ?></p>
                     </div>
                 </div>
 
@@ -240,7 +276,7 @@ require_once __DIR__ ."/../../includes/header.php";
                 <div class="card mb-4">
                     <div class="card-content">
                         <h3 class="mb-3">About the Client</h3>
-                        <p><strong><a href="/pages/profile/view.php?id=<?php echo $project["client_user_id"]; ?>"><?php echo htmlspecialchars($project["client_first_name"] . " " . $project["client_last_name"]); ?></a></strong></p>
+                        <p><strong><a href="<?php echo $baseUrl; ?>/pages/profile/view.php?id=<?php echo $project["client_user_id"]; ?>"><?php echo htmlspecialchars($project["client_first_name"] . " " . $project["client_last_name"]); ?></a></strong></p>
                         <?php if (!empty($project["company_name"])): ?>
                             <p><?php echo htmlspecialchars($project["company_name"]); ?></p>
                         <?php endif; ?>
@@ -249,7 +285,7 @@ require_once __DIR__ ."/../../includes/header.php";
                         // Fetch client stats (e.g., projects posted, total spent) - Dynamic implementation needed
                         $client_stats_stmt = $db->prepare("SELECT COUNT(project_id) as projects_posted, COALESCE(SUM(total_amount), 0) as total_spent FROM projects p LEFT JOIN contracts c ON p.project_id = c.project_id WHERE p.client_id = :client_id");
                         $client_stats_stmt->bindParam(":client_id", $project["client_user_id"], PDO::PARAM_INT);
-                        $client_stats_stmt->execute();
+
                         $client_stats = $client_stats_stmt->fetch(PDO::FETCH_ASSOC);
                         $client_projects_posted = $client_stats ? $client_stats["projects_posted"] : 0;
                         $client_total_spent = $client_stats ? $client_stats["total_spent"] : 0;
@@ -266,8 +302,8 @@ require_once __DIR__ ."/../../includes/header.php";
                     <div class="card mb-4">
                         <div class="card-content">
                             <h3 class="mb-3">Manage Project</h3>
-                            <a href="/pages/projects/edit.php?id=<?php echo $project_id; ?>" class="btn btn-secondary btn-sm mb-2" style="display: block; text-align: center;">Edit Project</a>
-                            <form action="/pages/projects/actions.php" method="post" onsubmit="return confirm('Are you sure you want to close this project?');">
+                            <a href="<?php echo $baseUrl; ?>/pages/projects/edit.php?id=<?php echo $project_id; ?>" class="btn btn-secondary btn-sm mb-2" style="display: block; text-align: center;">Edit Project</a>
+                            <form action="<?php echo $baseUrl; ?>/pages/projects/actions.php" method="post" onsubmit="return confirm('Are you sure you want to close this project?');">
                                 <input type="hidden" name="action" value="close_project">
                                 <input type="hidden" name="project_id" value="<?php echo $project_id; ?>">
                                 <input type="hidden" name="token" value="<?php echo generate_form_token('project_action_token'); ?>"> <!-- Add CSRF token -->

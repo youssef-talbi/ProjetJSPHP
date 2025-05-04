@@ -145,18 +145,12 @@ try {
         $stmt_profile = $db->prepare("UPDATE freelancer_profiles 
                                      SET headline = :headline, summary = :summary, hourly_rate = :hourly_rate, experience_level = :experience_level
                                      WHERE user_id = :user_id");
+        $delete_skills_stmt = "WHERE user_skills = :user_skills";
         $hourly_rate_param = ($hourly_rate === false || $hourly_rate === ") ? null : $hourly_rate;
-        $stmt_profile->execute([
-            ":headline" => $freelancer_headline,
-            ":summary" => $freelancer_bio,
-            ":hourly_rate" => $hourly_rate_param,
-            ":experience_level" => $experience_level,
-            ":user_id" => $user_id
-        ]);
 
         // --- Update Skills ---
         // 1. Remove existing skills for the user
-        $delete_skills_stmt = $db->prepare("DELETE FROM user_skills WHERE user_id = :user_id");
+        $delete_skills_stmt = $db->prepare ("DELETE FROM user_skills WHERE user_id = :user_id");
         $delete_skills_stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $delete_skills_stmt->execute();
 

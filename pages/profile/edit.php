@@ -4,7 +4,7 @@ require_once __DIR__ . "/../../bootstrap.php";
 
 // Check if user is logged in
 if (!is_logged_in()) {
-    redirect("/pages/auth/login.php?error=login_required&redirect=/pages/profile/edit.php");
+    redirect("improved/pages/auth/login.php?error=login_required&redirect=/pages/profile/edit.php");
     exit;
 }
 
@@ -72,7 +72,7 @@ $token = generate_form_token('edit_profile_token');
         <?php endif; ?>
 
         <?php if ($user_data): ?>
-        <form action="/pages/profile/edit_process.php" method="post" class="validate-form" enctype="multipart/form-data">
+        <form action="<?php echo $baseUrl; ?>/pages/profile/edit_process.php" method="post" class="validate-form" enctype="multipart/form-data">
             <input type="hidden" name="token" value="<?php echo $token; ?>">
 
             <h3 class="mb-3">Basic Information</h3>
@@ -173,7 +173,7 @@ $token = generate_form_token('edit_profile_token');
 
             <div class="form-actions">
                 <button type="submit" class="btn">Save Changes</button>
-                <a href="/pages/profile/view.php?id=<?php echo $user_id; ?>" class="btn btn-secondary">Cancel</a>
+                <a href="<?php echo $baseUrl; ?>/pages/profile/view.php?id=<?php echo $user_id; ?>" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
         <?php else: ?>

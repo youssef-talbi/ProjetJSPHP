@@ -1,7 +1,7 @@
 <?php
 // Include bootstrap
 require_once __DIR__ . "/../../bootstrap.php";
-
+$baseUrl="/improved";
 // Get user ID from query string
 $user_id = isset($_GET["id"]) ? filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT) : null;
 
@@ -134,7 +134,7 @@ require_once __DIR__ . "/../../includes/header.php"; // Fixed header include
 
                     <!-- Add Edit Profile Button (if viewer is the profile owner) -->
                     <?php if (is_logged_in() && get_current_user_id() == $user_id): ?>
-                        <a href="/pages/profile/edit.php" class="btn btn-secondary mt-3">Edit Profile</a>
+                        <a href="<?php echo $baseUrl; ?>/pages/profile/edit.php" class="btn btn-secondary mt-3">Edit Profile</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -214,7 +214,7 @@ require_once __DIR__ . "/../../includes/header.php"; // Fixed header include
                             <?php foreach ($projects_posted as $project): ?>
                             <li style="border-bottom: 1px solid #eee; padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
                                 <div>
-                                    <a href="/pages/projects/view.php?id=<?php echo $project["project_id"]; ?>"><?php echo htmlspecialchars($project["title"]); ?></a>
+                                    <a href="<?php echo $baseUrl; ?>/pages/projects/view.php?id=<?php echo $project["project_id"]; ?>"><?php echo htmlspecialchars($project["title"]); ?></a>
                                     <small class="text-muted d-block">Posted <?php echo time_ago($project["creation_date"]); ?></small>
                                 </div>
                                 <span class="badge <?php echo $project["status"] === 'open' ? 'badge-success' : 'badge-secondary'; ?>"><?php echo ucfirst($project["status"]); ?></span>
@@ -237,7 +237,7 @@ require_once __DIR__ . "/../../includes/header.php"; // Fixed header include
                         <div style="border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1rem;">
                             <div class="flex justify-between items-center mb-2">
                                 <div>
-                                    Reviewed <a href="/pages/profile/view.php?id=<?php echo $review["reviewee_id"]; ?>"><strong><?php echo htmlspecialchars($review["freelancer_first_name"] . " " . $review["freelancer_last_name"]); ?></strong></a>
+                                    Reviewed <a href="<?php echo $baseUrl; ?>/pages/profile/view.php?id=<?php echo $review["reviewee_id"]; ?>"><strong><?php echo htmlspecialchars($review["freelancer_first_name"] . " " . $review["freelancer_last_name"]); ?></strong></a>
                                     <span class="text-muted ml-2"><?php echo time_ago($review["submission_date"]); ?></span>
                                 </div>
                                 <div>

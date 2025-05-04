@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS projects (
     budget_min DECIMAL(10,2),
     budget_max DECIMAL(10,2),
     project_type ENUM('hourly', 'fixed') NOT NULL,
-    status ENUM('draft', 'open', 'in_progress', 'completed', 'cancelled') NOT NULL DEFAULT 'open',
+    status ENUM('draft', 'open', 'in progress', 'completed', 'cancelled') NOT NULL DEFAULT 'open',
     creation_date DATETIME NOT NULL,
     deadline DATE,
     visibility ENUM('public', 'invite_only') DEFAULT 'public',
